@@ -1,13 +1,11 @@
 package api;
 
-import dto.Post;
 import io.restassured.response.Response;
-
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-public class PostService extends BaseTest {
+import static api.BaseSpecifications.getBaseSpec;
+
+public class PostService {
 
     private static final String POSTS = "/posts";
     private static final String POST_BY_ID = "/posts/{id}";
@@ -19,29 +17,17 @@ public class PostService extends BaseTest {
                 .post(POSTS);
     }
 
+    public Response createPostOnInvalidEndpoint(Map<String, Object> postData) {
+        return getBaseSpec()
+                .body(postData)
+                .when()
+                .post("/invalid-endpoint-12345");
+    }
+
     public Response getPostsResponse() {
         return getBaseSpec()
                 .when()
                 .get(POSTS);
-    }
-
-    // Возвращает список постов как DTO
-    public List<Post> getPostsAsDto() {
-        return Arrays.asList(getBaseSpec()
-                .when()
-                .get(POSTS)
-                .then()
-                .extract()
-                .as(Post[].class));
-    }
-
-    public Post getPostByIdAsDto(int postId) {
-        return getBaseSpec()
-                .when()
-                .get(POST_BY_ID, postId)
-                .then()
-                .extract()
-                .as(Post.class);
     }
 
     public Response patchUpdatePost(int postId, Map<String, Object> postData) {
