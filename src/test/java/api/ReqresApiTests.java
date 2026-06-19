@@ -3,7 +3,6 @@ package api;
 import dto.Post;
 import dto.User;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,13 +17,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("API тесты для JSONPlaceholder")
 public class ReqresApiTests {
 
-    private static UserService userService;
-    private static PostService postService;
+    private final UserService userService;
+    private final PostService postService;
 
-    @BeforeAll
-    public static void setUp() {
-        userService = new UserService();
-        postService = new PostService();
+    public ReqresApiTests() {
+        this.userService = new UserService();
+        this.postService = new PostService();
     }
 
     @Test

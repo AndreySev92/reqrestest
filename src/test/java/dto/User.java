@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
-    private int id;
+    private Integer id;
     private String name;
     private String username;
     private String email;

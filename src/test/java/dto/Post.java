@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Post {
-    private int id;
+    private Integer id;
     private String title;
     private String body;
-    private int userId;
+    private Integer userId;
 }

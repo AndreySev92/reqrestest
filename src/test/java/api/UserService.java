@@ -3,10 +3,9 @@ package api;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 
-import static api.BaseSpecifications.getBaseSpec;
 
 @Slf4j
-public class UserService {
+public class UserService extends BaseSpecifications{
 
     private static final String USERS = "/users";
     private static final String USER_BY_ID = "/users/{id}";

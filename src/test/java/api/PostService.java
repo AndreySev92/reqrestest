@@ -5,10 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
-import static api.BaseSpecifications.getBaseSpec;
 
 @Slf4j
-public class PostService {
+public class PostService extends BaseSpecifications{
 
     private static final String POSTS = "/posts";
     private static final String POST_BY_ID = "/posts/{id}";
