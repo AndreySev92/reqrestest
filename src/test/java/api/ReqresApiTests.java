@@ -5,12 +5,15 @@ import dto.User;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,42 +46,60 @@ public class ReqresApiTests {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "1, Leanne Graham",
+            "2, Ervin Howell",
+            "3, Clementine Bauch"
+    })
+    @DisplayName("Тест 1.1: Получить пользователя по ID и проверить имя")
+    public void test1_getUserByIdAndValidateName(int userId, String expectedName) {
+
+        Response response = userService.getUserByIdResponse(userId);
+        User user = response.as(User.class);
+
+        assertThat(response.statusCode())
+                .as(ValidationMessages.STATUS_CODE_OK)
+                .isEqualTo(200);
+
+        assertThat(user.getName())
+                .as(ValidationMessages.USER_FOUND)
+                .isEqualTo(expectedName);
+    }
+
     @Test
     @DisplayName("Тест 2.1: Успешное создание поста")
     public void test2_createPostSuccess() {
-        Map<String, Object> postData = new HashMap<>();
-        postData.put("title", "foo");
-        postData.put("body", "bar");
-        postData.put("userId", 1);
-
-        Response response = postService.createPost(postData);
+        Response response = postService.createPost(TestDataProvider.getValidPostData());
         Post createdPost = response.as(Post.class);
 
+        // THEN
         assertThat(response.statusCode())
-                .as("Статус код должен быть 201 Created")
+                .as(ValidationMessages.STATUS_CODE_OK)
                 .isEqualTo(201);
 
+        // ASSERT
         assertThat(createdPost.getId())
                 .as("ID созданного поста должен быть положительным")
                 .isPositive();
 
         assertThat(createdPost.getTitle())
                 .as("Заголовок должен совпадать")
-                .isEqualTo("foo");
+                .isEqualTo(TestDataProvider.getExpectedTitle());
 
         assertThat(createdPost.getBody())
                 .as("Тело поста должно совпадать")
-                .isEqualTo("bar");
+                .isEqualTo(TestDataProvider.getExpectedBody());
 
         assertThat(createdPost.getUserId())
                 .as("ID пользователя должен быть 1")
-                .isEqualTo(1);
+                .isEqualTo(TestDataProvider.getExpectedUserId());
     }
 
     @Test
-    @DisplayName("Тест 2.1: Создание поста с пустыми данными")
+    @DisplayName("Тест 2.2: Создание поста с пустыми данными")
     public void test2_createPostFailure() {
-        Response response = postService.createPost(new HashMap<>());
+        Response response = postService.createPost(TestDataProvider.getEmptyPostData());
         Post createdPost = response.as(Post.class);
 
         assertThat(response.statusCode())
@@ -91,17 +112,17 @@ public class ReqresApiTests {
     }
 
     @Test
-    @DisplayName("Тест 2.1: Создание поста на невалидном эндпоинте")
+    @DisplayName("Тест 2.3: Создание поста на невалидном эндпоинте")
     public void test2_createPostInvalidEndpoint() {
-        Map<String, Object> postData = new HashMap<>();
-        postData.put("title", "test");
 
-        Response response = postService.createPostOnInvalidEndpoint(postData);
+        Response response = postService.createPostOnInvalidEndpoint(TestDataProvider.getValidPostData());
+
 
         assertThat(response.statusCode())
-                .as("Статус код должен быть 404 Not Found")
+                .as(ValidationMessages.STATUS_CODE_404)
                 .isEqualTo(404);
     }
+
 
     @Test
     @DisplayName("Тест 3: Проверка сортировки постов по ID")
@@ -125,33 +146,52 @@ public class ReqresApiTests {
     @Test
     @DisplayName("Тест 4.1: Удаление поста")
     public void test4_deletePost() {
-        Response response = postService.deletePost(2);
+        int postId = TestDataProvider.getPostIdToDelete();
+
+        Response response = postService.deletePost(postId);
 
         assertThat(response.statusCode())
-                .as("Статус код должен быть 200 OK")
+                .as(ValidationMessages.STATUS_CODE_OK)
                 .isEqualTo(200);
     }
+
 
     @Test
     @DisplayName("Тест 4.2: Обновление поста и проверка данных")
     public void test4_updatePostAndValidate() {
-        Map<String, Object> updatedData = new HashMap<>();
-        updatedData.put("title", "Updated Title");
-        updatedData.put("body", "Updated Body");
+        int postId = TestDataProvider.getPostIdToDelete();
+        String newTitle = TestDataProvider.getUpdateTitle();
+        String newBody = TestDataProvider.getUpdateBody();
 
-        Response response = postService.patchUpdatePost(1, updatedData);
+        // WHEN
+        Response response = postService.patchUpdatePost(
+                postId,
+                TestDataProvider.getUpdatePostData(newTitle, newBody)
+        );
         Post updatedPost = response.as(Post.class);
 
+        // THEN
         assertThat(response.statusCode())
-                .as("Статус код должен быть 200 OK")
+                .as(ValidationMessages.STATUS_CODE_OK)
                 .isEqualTo(200);
 
+        // ASSERT
         assertThat(updatedPost.getTitle())
                 .as("Заголовок должен обновиться")
-                .isEqualTo("Updated Title");
+                .isEqualTo(newTitle);
 
         assertThat(updatedPost.getBody())
                 .as("Тело поста должно обновиться")
-                .isEqualTo("Updated Body");
+                .isEqualTo(newBody);
+    }
+
+    @Test
+    @DisplayName("Тест 5: Получение несуществующего пользователя (404)")
+    public void test5_getNonExistentUser() {
+        Response response = userService.getUserByIdResponse(TestDataProvider.getNonExistentUserId());
+
+        assertThat(response.statusCode())
+                .as(ValidationMessages.STATUS_CODE_404)
+                .isEqualTo(404);
     }
 }
